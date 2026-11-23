@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+    <title>Self Driving Car - DQN</title>
+  </head>
+  <body>
+    <canvas id="car_canvas"></canvas>
+    <canvas id="neural_network"></canvas>
+
+    <div id="panel">
+      <label>
+        Sim speed
+        <input id="speed" type="range" min="1" max="50" value="5" />
+        <span id="speedVal">5×</span>
+      </label>
+      <div class="buttons">
+        <button id="modeBtn">Mode: TRAIN</button>
+        <button id="saveBtn">Save</button>
+        <button id="loadBtn">Load</button>
+        <button id="downloadBtn">Download</button>
+        <button id="loadFileBtn">Load file</button>
+        <input id="fileInput" type="file" accept=".json,.bin" multiple hidden />
+        <button id="resetBtn">Reset agent</button>
+      </div>
+      <div id="status">Loading TensorFlow.js…</div>
+    </div>
+
+    <!-- TensorFlow.js (pinned version). For offline use see README/setup notes. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+
+    <script src="./sprites.js"></script>
+    <script src="./utils.js"></script>
+    <script src="./visualizer.js"></script>
+    <script src="./dqn.js"></script>
+    <script src="./sensor.js"></script>
+    <script src="./road.js"></script>
+    <script src="./controls.js"></script>
+    <script src="./car.js"></script>
+    <script src="./env.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
