@@ -32,6 +32,10 @@ class Road {
 
   // viewTop / viewBottom = visible y-range, so we only draw what's on screen
   draw(ctx, viewTop, viewBottom) {
+    // asphalt (the grass is the canvas background, set in style.css)
+    ctx.fillStyle = "#4a4a4f";
+    ctx.fillRect(this.left, viewTop, this.width, viewBottom - viewTop);
+
     ctx.lineWidth = 5;
     ctx.strokeStyle = "white";
 

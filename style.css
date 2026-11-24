@@ -10,7 +10,7 @@ canvas {
 }
 
 #car_canvas {
-  background-color: rgb(209, 204, 204);
+  background-color: #4c9a3a; /* grass */
 }
 
 #neural_network {
@@ -67,4 +67,14 @@ canvas {
   font-size: 12px;
   color: #8fa0ff;
   min-height: 16px;
+}
+
+#panel button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#panel #playBtn {
+  background: #1c7a3e;
+  border-color: #2fb865;
 }

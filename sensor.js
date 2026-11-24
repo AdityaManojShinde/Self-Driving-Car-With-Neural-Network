@@ -1,7 +1,10 @@
+// number of sensor rays (also sets the network's input size, see env.js)
+const RAY_COUNT = 10;
+
 class Sensor {
   constructor(car) {
     this.car = car;
-    this.rayCount = 5;
+    this.rayCount = RAY_COUNT;
     this.rayLength = 150;
     this.raySpread = Math.PI / 2;
     this.readings = [];

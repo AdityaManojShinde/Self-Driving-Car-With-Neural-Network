@@ -2,13 +2,21 @@
 // Exposes reset() / step(action) in the usual Gym style.
 
 const ACTIONS = [
-  { label: "↑ gas", forward: true, left: false, right: false, reverse: false },
+  {
+    label: "↑ gas",
+    forward: true,
+    left: false,
+    right: false,
+    reverse: false,
+    brake: false,
+  },
   {
     label: "↖ gas+left",
     forward: true,
     left: true,
     right: false,
     reverse: false,
+    brake: false,
   },
   {
     label: "↗ gas+right",
@@ -16,29 +24,45 @@ const ACTIONS = [
     left: false,
     right: true,
     reverse: false,
+    brake: false,
   },
   {
-    label: "· coast",
+    label: "■ brake",
     forward: false,
     left: false,
     right: false,
     reverse: false,
+    brake: true,
   },
   {
-    label: "↓ brake",
+    label: "↓ reverse",
     forward: false,
     left: false,
     right: false,
     reverse: true,
+    brake: false,
+  },
+  {
+    label: "↙ rev+left",
+    forward: false,
+    left: true,
+    right: false,
+    reverse: true,
+    brake: false,
+  },
+  {
+    label: "↘ rev+right",
+    forward: false,
+    left: false,
+    right: true,
+    reverse: true,
+    brake: false,
   },
 ];
 
+// one label per ray, then speed / angle / lane position
 const STATE_LABELS = [
-  "ray 1 (L)",
-  "ray 2",
-  "ray 3 (mid)",
-  "ray 4",
-  "ray 5 (R)",
+  ...Array.from({ length: RAY_COUNT }, (_, i) => "ray " + (i + 1)),
   "speed",
   "angle",
   "lane pos",
@@ -51,6 +75,7 @@ class Environment {
   static MAX_STEPS = 3000; // episode time limit
   static STUCK_STEPS = 300; // end episode if no new progress for this long
   static CRASH_PENALTY = -10;
+  static ROAD_WIDTH = 300; // 3 lanes, ~100px each (was 200)
 
   // traffic settings
   static TRAFFIC_SPRITES = ["car_black", "car_red", "car_yellow"];
@@ -62,7 +87,8 @@ class Environment {
 
   constructor(viewHeight = 800) {
     this.viewHeight = viewHeight;
-    this.road = new Road(100, 200);
+    this.limitsEnabled = true; // false in Play mode: run until it crashes
+    this.road = new Road(100, Environment.ROAD_WIDTH);
     this.stateSize = STATE_LABELS.length;
     this.actionCount = ACTIONS.length;
     this.reset();
@@ -118,6 +144,7 @@ class Environment {
     c.controls.left = act.left;
     c.controls.right = act.right;
     c.controls.reverse = act.reverse;
+    c.controls.brake = act.brake;
 
     const prevY = c.y;
     this.#manageTraffic();
@@ -127,7 +154,6 @@ class Environment {
 
     // ----- reward -----
     let reward = (prevY - c.y) / c.maxSpeed; // forward progress, ~0..1 per step
-    if (act.reverse) reward -= 0.05;
     if (act.left || act.right) reward -= 0.01; // discourage wobbling
     const done = c.damaged;
     if (done) reward = Environment.CRASH_PENALTY;
@@ -141,6 +167,7 @@ class Environment {
     }
     const truncated =
       !done &&
+      this.limitsEnabled &&
       (this.steps >= Environment.MAX_STEPS ||
         this.sinceBest >= Environment.STUCK_STEPS);
 

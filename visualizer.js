@@ -12,7 +12,7 @@ class Visualizer {
     ctx.textAlign = "left";
     ctx.fillStyle = "white";
     ctx.font = "bold 20px Arial";
-    ctx.fillText("Deep Q-Network · TensorFlow.js", m, y);
+    ctx.fillText("Deep Q-Network", m, y);
     y += 36;
 
     ctx.font = "14px monospace";

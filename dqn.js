@@ -167,6 +167,20 @@ class DQNAgent {
     return loss;
   }
 
+  #checkOutput(model) {
+    const out = model.outputs[0].shape[1];
+    if (out != this.actionCount) {
+      model.dispose();
+      throw new Error(
+        "Saved model has " +
+          out +
+          " actions, this project has " +
+          this.actionCount +
+          " (retrain)",
+      );
+    }
+  }
+
   async save() {
     await this.online.save(MODEL_URL);
     localStorage.setItem(
@@ -181,6 +195,7 @@ class DQNAgent {
 
   async load() {
     const model = await tf.loadLayersModel(MODEL_URL);
+    this.#checkOutput(model);
     this.online.dispose();
     this.online = model;
     this.syncTarget();
@@ -200,6 +215,7 @@ class DQNAgent {
       model.dispose();
       throw new Error("Model input size doesn't match this project");
     }
+    this.#checkOutput(model);
     this.online.dispose();
     this.online = model;
     this.syncTarget();

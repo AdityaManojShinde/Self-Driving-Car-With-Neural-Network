@@ -1,4 +1,6 @@
 class Car {
+  static HITBOX_SCALE = 0.8;
+
   // controlType: "KEYS" (human), "DUMMY" (traffic), "AGENT" (driven by the DQN via env.step)
   constructor(
     x,
@@ -19,6 +21,9 @@ class Car {
     this.friction = 0.05;
     this.angle = 0;
     this.damaged = false;
+    // collision box is a shrunk copy of the visual box: 1 = exact size,
+    // 0.8 = 10% of slack on every side. Sensor rays still hit the full-size shape.
+    this.hitboxScale = Car.HITBOX_SCALE;
     this.spriteName = spriteName; // e.g. "car_blue"
     if (controlType != "DUMMY") {
       this.sensor = new Sensor(this);
@@ -33,6 +38,15 @@ class Car {
     }
     if (this.controls.reverse) {
       this.speed -= this.acceleration;
+    }
+
+    // brake: slow down toward 0 but never into reverse
+    if (this.controls.brake) {
+      if (this.speed > 0) {
+        this.speed = Math.max(0, this.speed - this.acceleration * 2);
+      } else if (this.speed < 0) {
+        this.speed = Math.min(0, this.speed + this.acceleration * 2);
+      }
     }
 
     if (this.speed > this.maxSpeed) {
@@ -71,7 +85,8 @@ class Car {
   update(roadBorders, traffic) {
     if (!this.damaged) {
       this.#move();
-      this.polygon = this.#createPolygon();
+      this.polygon = this.#createPolygon(1); // visual shape (sensors)
+      this.hitbox = this.#createPolygon(this.hitboxScale); // collisions
       this.damaged = this.#assessDamage(roadBorders, traffic);
     }
 
@@ -82,22 +97,24 @@ class Car {
 
   #assessDamage(roadBorders, traffic) {
     for (let i = 0; i < roadBorders.length; i++) {
-      if (polysIntersect(this.polygon, roadBorders[i])) {
+      if (polysIntersect(this.hitbox, roadBorders[i])) {
         return true;
       }
     }
     for (let i = 0; i < traffic.length; i++) {
-      if (polysIntersect(this.polygon, traffic[i].polygon)) {
+      if (polysIntersect(this.hitbox, traffic[i].hitbox)) {
         return true;
       }
     }
     return false;
   }
 
-  #createPolygon() {
+  #createPolygon(scale = 1) {
     const points = [];
-    const rad = Math.hypot(this.width, this.height) / 2;
-    const alpha = Math.atan2(this.width, this.height);
+    const w = this.width * scale;
+    const h = this.height * scale;
+    const rad = Math.hypot(w, h) / 2;
+    const alpha = Math.atan2(w, h);
     points.push({
       x: this.x - Math.sin(this.angle - alpha) * rad,
       y: this.y - Math.cos(this.angle - alpha) * rad,

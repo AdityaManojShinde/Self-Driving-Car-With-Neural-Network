@@ -4,6 +4,7 @@ class Controls {
     this.left = false;
     this.right = false;
     this.reverse = false;
+    this.brake = false; // decelerate toward 0 without reversing
     switch (type) {
       case "KEYS":
         this.#addKeyboardListeners();
